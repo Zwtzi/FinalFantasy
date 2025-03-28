@@ -1,49 +1,66 @@
+// src/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from './api';  // Importa la función login desde api.js
+import { useAuth } from './AuthContext';
 
-function Login() {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate(); // Hook de React Router para redirigir
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();  // Evitar la recarga de la página
+    e.preventDefault();
   
     try {
-      const data = await login(username, password);
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
   
+      if (!response.ok) {
+        throw new Error('Credenciales inválidas');
+      }
+  
+      const data = await response.json();
+  
+      // Almacenar la información del usuario en el contexto de autenticación
+      const userData = { username, tipo: data.tipo };
+      login(userData);
+  
+      // Redirigir según el tipo de usuario
       if (data.tipo === 'alumno') {
-        navigate('/alumnodashboard');  // Redirigir a la vista de alumno
+        navigate('/alumnodashboard');
       } else if (data.tipo === 'maestro') {
-        navigate('/profesordashboard');  // Redirigir a la vista de profesor
+        navigate('/profesordashboard');
       }
     } catch (error) {
-      alert(error.message);  // Mostrar un mensaje de error en caso de que el login falle
+      console.error('Error al iniciar sesión:', error);
+      alert(error.message);
     }
   };
   
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <form onSubmit={handleLogin}>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="submit">Login</button>
+    </form>
   );
-}
+};
 
 export default Login;

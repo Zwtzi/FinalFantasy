@@ -1,20 +1,39 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './AuthContext';
 import Login from './Login';
 import AlumnoDashboard from './AlumnoDashboard';
 import ProfesorDashboard from './ProfesorDashboard';
+import ProtectedRoute from './ProtectedRoute';
 
-function App() {
+const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/alumnodashboard" element={<AlumnoDashboard />} />
-        <Route path="/profesordashboard" element={<ProfesorDashboard />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/alumnodashboard"
+            element={
+              <ProtectedRoute>
+                <AlumnoDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profesordashboard"
+            element={
+              <ProtectedRoute>
+                <ProfesorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
